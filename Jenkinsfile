@@ -176,23 +176,98 @@
 // }
 // Example-6: with DisableConcurrentBuilds
 
+// pipeline {
+//     agent any
+
+//     options {
+//         disableConcurrentBuilds()
+//     }
+
+//     stages {
+//         stage('Demo') {
+//             steps {
+//                 echo "Build Started: #${env.BUILD_NUMBER}"
+//                 sh """
+//                     echo "Simulating long work..."
+//                     sleep 30
+//                     echo "Build Finished: #${env.BUILD_NUMBER}"
+//                 """
+//             }
+//         }
+//     }
+// }
+
+// Example-7: with parameters
 pipeline {
     agent any
 
-    options {
-        disableConcurrentBuilds()
+    parameters {
+
+        // String Param
+        string(
+            name: 'USERNAME',
+            defaultValue: 'avinash',
+            description: 'Enter your username'
+        )
+
+        // Boolean Param
+        booleanParam(
+            name: 'RUN_TESTS',
+            defaultValue: true,
+            description: 'Run tests or skip?'
+        )
+
+        // Choice Param
+        choice(
+            name: 'ENVIRONMENT',
+            choices: ['dev', 'qa', 'stage', 'prod'],
+            description: 'Choose deployment environment'
+        )
+
+        // Password Param
+        password(
+            name: 'USER_PASSWORD',
+            defaultValue: '',
+            description: 'Your password'
+        )
+
+        // Text Param (multi-line)
+        text(
+            name: 'DESCRIPTION',
+            defaultValue: 'This is a multi-line text',
+            description: 'Add notes'
+        )
     }
 
     stages {
-        stage('Demo') {
+        stage('Show All Params') {
             steps {
-                echo "Build Started: #${env.BUILD_NUMBER}"
-                sh """
-                    echo "Simulating long work..."
-                    sleep 30
-                    echo "Build Finished: #${env.BUILD_NUMBER}"
-                """
+                script {
+                    echo "Username: ${params.USERNAME}"
+                    echo "Run Tests?: ${params.RUN_TESTS}"
+                    echo "Environment Selected: ${params.ENVIRONMENT}"
+                    echo "Description: ${params.DESCRIPTION}"
+
+                    // Password should NOT be printed, for safety
+                    echo "Password captured (not showing for security): YES"
+                }
+            }
+        }
+
+        stage('Conditional Test Stage') {
+            when {
+                expression { params.RUN_TESTS == true }
+            }
+            steps {
+                echo "Running tests because RUN_TESTS = true"
+            }
+        }
+
+        stage('Deploy Stage') {
+            steps {
+                echo "Deploying to ${params.ENVIRONMENT} environment"
             }
         }
     }
 }
+
