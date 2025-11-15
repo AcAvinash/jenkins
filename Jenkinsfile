@@ -60,7 +60,6 @@ pipeline {
     
     environment {
         COURSE_NAME = 'Jenkins Basics'
-
     }
 
     stages {
@@ -68,8 +67,8 @@ pipeline {
             steps {
                script {
                    sh """
-                     echo "Building ${env.COURSE_}..."
-                     env  
+                     echo "Building ${env.COURSE_NAME}..."
+                     env
                    """
                }
             }
@@ -85,6 +84,7 @@ pipeline {
             steps {
                 script {
                     echo 'Deploying...'
+                }
             }
         }
     }
