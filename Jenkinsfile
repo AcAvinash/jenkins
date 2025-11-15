@@ -199,75 +199,74 @@
 
 // Example-7: with parameters
 pipeline {
-    agent any
-
-    parameters {
-
-        // String Param
-        string(
-            name: 'USERNAME',
-            defaultValue: 'avinash',
-            description: 'Enter your username'
-        )
-
-        // Boolean Param
-        booleanParam(
-            name: 'RUN_TESTS',
-            defaultValue: true,
-            description: 'Run tests or skip?'
-        )
-
-        // Choice Param
-        choice(
-            name: 'ENVIRONMENT',
-            choices: ['dev', 'qa', 'stage', 'prod'],
-            description: 'Choose deployment environment'
-        )
-
-        // Password Param
-        password(
-            name: 'USER_PASSWORD',
-            defaultValue: '',
-            description: 'Your password'
-        )
-
-        // Text Param (multi-line)
-        text(
-            name: 'DESCRIPTION',
-            defaultValue: 'This is a multi-line text',
-            description: 'Add notes'
-        )
+    agent  {
+        label 'AGENT-1'
     }
-
+    environment { 
+        COURSE = 'jenkins'
+    }
+    options {
+        timeout(time: 30, unit: 'MINUTES') 
+        disableConcurrentBuilds()
+    }
+    parameters {
+        string(name: 'PERSON', defaultValue: 'Mr Jenkins', description: 'Who should I say hello to?')
+        text(name: 'BIOGRAPHY', defaultValue: '', description: 'Enter some information about the person')
+        booleanParam(name: 'TOGGLE', defaultValue: true, description: 'Toggle this value')
+        choice(name: 'CHOICE', choices: ['One', 'Two', 'Three'], description: 'Pick something')
+        password(name: 'PASSWORD', defaultValue: 'SECRET', description: 'Enter a password') 
+    }
+    // Build
     stages {
-        stage('Show All Params') {
+        stage('Build') {
             steps {
-                script {
-                    echo "Username: ${params.USERNAME}"
-                    echo "Run Tests?: ${params.RUN_TESTS}"
-                    echo "Environment Selected: ${params.ENVIRONMENT}"
-                    echo "Description: ${params.DESCRIPTION}"
-
-                    // Password should NOT be printed, for safety
-                    echo "Password captured (not showing for security): YES"
+                script{
+                    sh """
+                        echo "Hello Build"
+                        sleep 10
+                        env
+                        echo "Hello ${params.PERSON}"
+                    """
                 }
             }
         }
-
-        stage('Conditional Test Stage') {
-            when {
-                expression { params.RUN_TESTS == true }
-            }
+        stage('Test') {
             steps {
-                echo "Running tests because RUN_TESTS = true"
+                script{
+                    echo 'Testing..'
+                }
             }
         }
-
-        stage('Deploy Stage') {
-            steps {
-                echo "Deploying to ${params.ENVIRONMENT} environment"
+        stage('Deploy') {
+            input {
+                message "Should we continue?"
+                ok "Yes, we should."
+                submitter "alice,bob"
+                parameters {
+                    string(name: 'PERSON', defaultValue: 'Mr Jenkins', description: 'Who should I say hello to?')
+                }
             }
+            steps {
+                script{
+                    echo "Hello, ${PERSON}, nice to meet you."
+                    
+                    echo 'Deploying..'
+                }
+            }
+        }
+        
+    }
+
+    post { 
+        always { 
+            echo 'I will always say Hello again!'
+            deleteDir()
+        }
+        success { 
+            echo 'Hello Success'
+        }
+        failure { 
+            echo 'Hello Failure'
         }
     }
 }
-
