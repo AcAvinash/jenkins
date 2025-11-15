@@ -158,30 +158,8 @@
 // }
 
 //Example-5: withouth DisableConcurrentBuilds
-pipeline {
-    agent any
-
-    stages {
-        stage('Demo') {
-            steps {
-                echo "Build Started: #${env.BUILD_NUMBER}"
-                sh """
-                    echo "Simulating long work..."
-                    sleep 30
-                    echo "Build Finished: #${env.BUILD_NUMBER}"
-                """
-            }
-        }
-    }
-}
-// Example-6: with DisableConcurrentBuilds
-
 // pipeline {
 //     agent any
-
-//     options {
-//         disableConcurrentBuilds()
-//     }
 
 //     stages {
 //         stage('Demo') {
@@ -196,3 +174,25 @@ pipeline {
 //         }
 //     }
 // }
+// Example-6: with DisableConcurrentBuilds
+
+pipeline {
+    agent any
+
+    options {
+        disableConcurrentBuilds()
+    }
+
+    stages {
+        stage('Demo') {
+            steps {
+                echo "Build Started: #${env.BUILD_NUMBER}"
+                sh """
+                    echo "Simulating long work..."
+                    sleep 30
+                    echo "Build Finished: #${env.BUILD_NUMBER}"
+                """
+            }
+        }
+    }
+}
